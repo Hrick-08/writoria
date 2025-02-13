@@ -1,4 +1,3 @@
 tempCodeRunnerFile.py
 .env
-instance\blog.db
-instance/blog.db
+instance/
