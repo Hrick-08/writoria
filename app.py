@@ -112,10 +112,43 @@ def write_blog():
             return redirect(url_for('blog'))
             
     return render_template('write-blog.html')
+@app.route('/blog/<int:post_id>')
+def blog_detail(post_id):
+    post = Post.query.get(post_id)
+    if not post:
+        return "Error: Post not found", 404  # Debugging Message
+    return render_template('blog_detail.html', post=post)
 
 
+@app.route('/edit/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def edit_blog(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        flash("You are not authorized to edit this post.")
+        return redirect(url_for('blog_detail', post_id=post.id))
+    
+    if request.method == 'POST':
+        post.title = request.form['title']
+        post.content = request.form['content']
+        db.session.commit()
+        return redirect(url_for('blog_detail', post_id=post.id))
+
+    return render_template('edit_blog.html', post=post)
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+@app.route('/delete/<int:post_id>', methods=['POST'])
+@login_required
+def delete_blog(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        flash("You are not authorized to delete this post.")
+        return redirect(url_for('blog_detail', post_id=post.id))
+    
+    db.session.delete(post)
+    db.session.commit()
+    flash("Post deleted successfully.")
+    return redirect(url_for('blog'))
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
