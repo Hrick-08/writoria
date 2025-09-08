@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Help Center - Writoria{% endblock %}
+
+{% block extra_css %}
+<style>
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+    }
+    .success-toast {
+        background-color: var(--success-color);
+        border-color: rgba(16, 185, 129, 0.2);
+        color: white;
+    }
+
+    .contact-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .contact-info {
+        background: var(--glass-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        color: var(--text-color);
+        margin-bottom: 2rem;
+    }
+
+    .contact-info h3 {
+        color: var(--text-color);
+        font-weight: 600;
+    }
+
+    .contact-info p {
+        color: var(--text-color);
+        opacity: 0.9;
+    }
+
+    .contact-info .text-muted {
+        color: var(--text-color) !important;
+        opacity: 0.6;
+    }
+
+    .form-label {
+        color: var(--text-color);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <!-- Toast for notifications -->
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Form Section -->
+        <div class="col-md-8">
+            <div class="contact-card">
+                <h2 class="mb-4 text-center" style="color: var(--text-color);">Send Us a Message</h2>
+                
+                <!-- Contact Information -->
+                <div class="mb-4 p-4 contact-info">
+                    <h3 class="h5 mb-3">Contact Information</h3>
+                    <p class="mb-2"><i class="fas fa-phone me-2"></i><strong>Phone:</strong> 1-888-963-8944 <span class="text-muted">(Mon-Fri, 9am-5pm IST)</span></p>
+                    <p class="mb-0"><i class="fas fa-envelope me-2"></i><strong>Email:</strong> support@writoria.com <span class="text-muted">(Expect a reply within 24-48 hours)</span></p>
+                </div>
+
+                <form id="contactForm" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="custom-input" id="name" name="name" required placeholder="Enter your name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="custom-input" id="email" name="email" required placeholder="Enter your email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject (Optional)</label>
+                        <input type="text" class="custom-input" id="subject" name="subject" placeholder="What's this about?">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="custom-textarea" id="message" name="message" rows="4" required 
+                                placeholder="Type your message here..."></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const toastEl = document.querySelector('.toast');
+    const toast = new bootstrap.Toast(toastEl, {
+        delay: 3000,
+        animation: true
+    });
+    const toastBody = toastEl.querySelector('.toast-body');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            subject: formData.get('subject') || 'No Subject',
+            message: formData.get('message')
+        };
+        
+        fetch('', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                form.reset();
+                toastEl.classList.remove('bg-danger');
+                toastEl.classList.add('bg-success');
+                toastBody.textContent = data.message;
+                toast.show();
+                
+                // Add a small delay before redirecting
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 2000);
+            } else {
+                toastEl.classList.remove('bg-success');
+                toastEl.classList.add('bg-danger');
+                toastBody.textContent = data.message;
+                toast.show();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastEl.classList.remove('bg-success');
+            toastEl.classList.add('bg-danger');
+            toastBody.textContent = 'An error occurred. Please try again.';
+            toast.show();
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Writoria{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="{% url 'home' %}" class="logo">Writoria</a>
+            <span class="slogan">Where words come alive</span>
+        </div>
+        <button id="mobile-menu" class="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-links">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+        <div id="nav-links" class="nav-links" aria-label="Main navigation">
+            <a href="{% url 'home' %}" class="nav-link">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                <span>Home</span>
+            </a>
+            <a href="{% url 'blog_list' %}" class="nav-link">
+                <i class="fas fa-blog" aria-hidden="true"></i>
+                <span>Blog</span>
+            </a>
+            <a href="{% url 'team' %}" class="nav-link">
+                <i class="fas fa-users" aria-hidden="true"></i>
+                <span>Our Team</span>
+            </a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'blog_create' %}" class="nav-link">
+                    <i class="fas fa-pen" aria-hidden="true"></i>
+                    <span>Write</span>
+                </a>
+                <a href="{% url 'profile' %}" class="nav-link">
+                    <i class="fas fa-user" aria-hidden="true"></i>
+                    <span>Profile</span>
+                </a>
+                {% if user.is_superuser %}
+                <a href="{% url 'admin:index' %}" class="nav-link">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                    <span>Admin Panel</span>
+                </a>
+                {% endif %}
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'auth' %}" class="nav-link">
+                    <i class="fas fa-user" aria-hidden="true"></i>
+                    <span>Login/Register</span>
+                </a>
+            {% endif %}
+        </div>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fas fa-sun" aria-hidden="true"></i>
+        </button>
+    </nav>
+
+    <main class="container">
+        {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-branding">
+                    <h3 class="footer-logo">Writoria</h3>
+                    <p class="footer-tagline">Where words come alive - your creative journey starts here. Share your stories, connect with writers, and inspire others.</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h4>Features</h4>
+                <ul>
+                    <li><a href="{% url 'blog_list' %}">Blog Writing</a></li>
+                    <li><a href="{% url 'blog_create' %}">Rich Text Editor</a></li>
+                    <li><a href="{% url 'profile' %}">Writer Profiles</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="{% url 'about' %}">About Us</a></li>
+                    <li><a href="{% url 'team' %}">Our Team</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="{% url 'help_center' %}">Help Center</a></li>
+                    <li><a href="{% url 'suggestion_form' %}">Share Feedback</a></li>
+                </ul>
+            </div>
+        </div>
+
+    </footer>
+
+    {% include 'chat/widget.html' %}
+    
+    <script>
+        // Star animation with enhanced visuals and distribution
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const numberOfStars = 200; // Increased for more density
+
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // Improved random distribution using layers
+                const layer = Math.floor(Math.random() * 3); // Creates 3 depth layers
+                const scale = 0.5 + (layer * 0.5); // Larger stars appear closer
+                
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.transform = `scale(${scale})`;
+                
+                // Varied animation duration based on layer
+                const baseDuration = 2 + (layer * 1.5);
+                star.style.setProperty('--duration', `${baseDuration + Math.random() * 2}s`);
+                
+                // Random animation delay for more natural effect
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                
+                // Varied opacity based on layer
+                star.style.setProperty('--max-opacity', `${0.5 + (layer * 0.2)}`);
+                
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Initialize stars
+        createStars();
+        
+        // Recreate stars on theme change for proper color adaptation
+        document.addEventListener('themeChanged', () => {
+            const starsContainer = document.getElementById('stars');
+            starsContainer.innerHTML = '';
+            createStars();
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/testimonials-slider.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

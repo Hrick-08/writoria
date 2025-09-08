@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}Authentication - Writoria{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <h2 class="auth-title">Welcome to Writoria</h2>
+        
+        <div class="auth-tabs">
+            <button type="button" class="auth-tab-btn active" data-tab="login">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+            </button>
+            <button type="button" class="auth-tab-btn" data-tab="register">
+                <i class="fas fa-user-plus"></i>
+                Register
+            </button>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="form-message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="auth-forms">
+            <div id="login-form" class="auth-tab-content active">
+                <form method="post" action="{% url 'auth' %}" class="auth-form" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="login">
+                    {% for field in login_form %}
+                    <div class="input-group{% if field.name == 'password' %} password-group{% endif %}">
+                        {{ field }}
+                        <i class="input-icon fas {% if field.name == 'username' %}fa-user{% elif field.name == 'password' %}fa-lock{% endif %}"></i>
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.name == 'password' %}
+                        <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="error-messages">
+                            {% for error in field.errors %}
+                            <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+
+            <div id="register-form" class="auth-tab-content">
+                <form method="post" action="{% url 'auth' %}" class="auth-form" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="register">
+                    
+                    <div class="input-group">
+                        {{ register_form.username }}
+                        <i class="input-icon fas fa-user"></i>
+                        <label for="{{ register_form.username.id_for_label }}">Username</label>
+                        {% if register_form.username.errors %}
+                        <div class="error-messages">
+                            {% for error in register_form.username.errors %}
+                            <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        {{ register_form.email }}
+                        <i class="input-icon fas fa-envelope"></i>
+                        <label for="{{ register_form.email.id_for_label }}">Email</label>
+                        {% if register_form.email.errors %}
+                        <div class="error-messages">
+                            {% for error in register_form.email.errors %}
+                            <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        {{ register_form.contact_number }}
+                        <i class="input-icon fas fa-phone"></i>
+                        <label for="{{ register_form.contact_number.id_for_label }}">Contact Number</label>
+                        {% if register_form.contact_number.errors %}
+                        <div class="error-messages">
+                            {% for error in register_form.contact_number.errors %}
+                            <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        {{ register_form.password1 }}
+                        <i class="input-icon fas fa-lock"></i>
+                        <label for="{{ register_form.password1.id_for_label }}">Password</label>
+                        <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        {% if register_form.password1.errors %}
+                        <div class="error-messages">
+                            {% for error in register_form.password1.errors %}
+                            <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        {{ register_form.password2 }}
+                        <i class="input-icon fas fa-lock"></i>
+                        <label for="{{ register_form.password2.id_for_label }}">Confirm Password</label>
+                        <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        {% if register_form.password2.errors %}
+                        <div class="error-messages">
+                            {% for error in register_form.password2.errors %}
+                            <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabBtns = document.querySelectorAll('.auth-tab-btn');
+    const forms = document.querySelectorAll('.auth-tab-content');
+
+    // Check if there are register form errors and show register tab
+    if (document.querySelector('#register-form .error-text')) {
+        switchTab('register');
+    }
+
+    // Handle tab switching
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.dataset.tab;
+            switchTab(tabName);
+        });
+    });
+
+    function switchTab(tabName) {
+        // Update tab buttons
+        tabBtns.forEach(btn => {
+            if (btn.dataset.tab === tabName) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Update form visibility
+        forms.forEach(form => {
+            if (form.id === `${tabName}-form`) {
+                form.classList.add('active');
+                form.classList.add('slide-in');
+                form.classList.remove('slide-out');
+            } else {
+                form.classList.remove('active');
+                form.classList.remove('slide-in');
+                form.classList.add('slide-out');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

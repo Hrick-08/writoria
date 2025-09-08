@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }}'s Profile - Writoria{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <div class="avatar-wrapper">
+            {% if user.userprofile.avatar %}
+                <img src="{{ user.userprofile.avatar.url }}" alt="{{ user.username }}" class="profile-avatar">
+            {% else %}
+                <div class="profile-avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            {% endif %}
+        </div>
+        <h1 class="profile-name">{{ user.get_full_name|default:user.username }}</h1>
+        {% if user.email %}
+            <p class="profile-email">{{ user.email }}</p>
+        {% endif %}
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-section">
+            <h2>Edit Profile</h2>
+            <div class="bg-white/5 rounded-2xl p-6">
+                <form method="post" enctype="multipart/form-data" class="profile-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.avatar.id_for_label }}" class="form-label">Profile Picture</label>
+                        <div class="avatar-controls">
+                            <div class="avatar-input-group">
+                                <input type="file" name="avatar" id="{{ form.avatar.id_for_label }}" class="hidden-file-input" accept="image/*">
+                                <button type="button" class="btn btn-primary upload-btn" id="triggerUpload">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Photo
+                                </button>
+                                <button type="button" class="btn btn-clear" id="clear-avatar">
+                                    <i class="fas fa-times"></i>
+                                    Clear Photo
+                                </button>
+                            </div>
+                            <div id="avatar-preview" class="avatar-preview"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group floating-label">
+                        <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                        {{ form.bio }}
+                        <span class="help-text">Tell others about yourself</span>
+                    </div>
+
+                    <div class="form-group floating-label">
+                        <label for="{{ form.website.id_for_label }}" class="form-label">Website</label>
+                        {{ form.website }}
+                        <span class="help-text">Your personal website or social media profile</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="fas fa-save"></i>
+                        Update Profile
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h2>My Posts</h2>
+            <div class="cards">
+                {% for post in user_posts %}
+                    <div class="card blog-card">
+                        <div class="card-header">
+                            {% if post.image %}
+                                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="card-image">
+                            {% endif %}
+                            <div class="card-badges">
+                                <span class="category-badge" data-category="{{ post.category }}">{{ post.get_category_display|default:"Blog" }}</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3><a href="{% url 'blog_detail' post.slug %}">{{ post.title }}</a></h3>
+                            <p class="post-meta">{{ post.created_at|date:"M d, Y" }}</p>
+                            <div class="post-actions">
+                                <a href="{% url 'blog_update' post.slug %}" class="btn btn-secondary">Edit</a>
+                                <a href="{% url 'blog_delete' post.slug %}" class="btn btn-danger">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✍️</div>
+                        <h3>Start Writing</h3>
+                        <p>Share your thoughts with the world!</p>
+                        <a href="{% url 'blog_create' %}" class="btn btn-primary">
+                            <i class="fas fa-pen"></i> Write your first post
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h2>My Bookmarks</h2>
+            <div class="cards">
+                {% for bookmark in bookmarks %}
+                    <div class="card blog-card">
+                        <div class="card-header">
+                            {% if bookmark.post.image %}
+                                <img src="{{ bookmark.post.image.url }}" alt="{{ bookmark.post.title }}" class="card-image">
+                            {% endif %}
+                            <div class="card-badges">
+                                <button class="bookmark-btn active" data-post-id="{{ bookmark.post.id }}">
+                                    <i class="fas fa-bookmark"></i>
+                                </button>
+                                <span class="category-badge">{{ bookmark.post.get_category_display|default:"Blog" }}</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3><a href="{% url 'blog_detail' bookmark.post.slug %}">{{ bookmark.post.title }}</a></h3>
+                            <p class="post-meta">By {{ bookmark.post.author.username }} | {{ bookmark.post.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔖</div>
+                        <h3>No Bookmarks Yet</h3>
+                        <p>Save interesting posts for later!</p>
+                        <a href="{% url 'blog_list' %}" class="btn btn-primary">
+                            <i class="fas fa-compass"></i> Explore Posts
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Avatar upload preview
+        const avatarInput = document.querySelector('input[name="avatar"]');
+        const avatarPreviewContainer = document.getElementById('avatar-preview');
+
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    showAvatarPreview(this.files[0]);
+                }
+            });
+
+            function showAvatarPreview(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Update preview container
+                    avatarPreviewContainer.innerHTML = '';
+                    const preview = document.createElement('div');
+                    preview.className = 'preview-item';
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Profile Picture Preview">
+                    `;
+                    avatarPreviewContainer.appendChild(preview);
+
+                    // Update profile avatar
+                    const profileAvatar = document.querySelector('.profile-avatar') || document.createElement('img');
+                    profileAvatar.src = e.target.result;
+                    profileAvatar.classList.add('profile-avatar');
+                    profileAvatar.alt = '{{ user.username }}';
+                    
+                    const placeholder = document.querySelector('.profile-avatar-placeholder');
+                    if (placeholder) {
+                        placeholder.replaceWith(profileAvatar);
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+
+            const clearButton = document.getElementById('clear-avatar');
+            if (clearButton) {
+                clearButton.addEventListener('click', function() {
+                    avatarInput.value = '';
+                    avatarPreviewContainer.innerHTML = '';
+                    const preview = document.querySelector('.profile-avatar');
+                    if (preview) {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'profile-avatar-placeholder';
+                        placeholder.innerHTML = '<i class="fas fa-user"></i>';
+                        preview.replaceWith(placeholder);
+                    }
+                });
+            }
+
+            const triggerUploadButton = document.getElementById('triggerUpload');
+            if (triggerUploadButton) {
+                triggerUploadButton.addEventListener('click', function() {
+                    avatarInput.click();
+                });
+            }
+        }
+
+        // Bookmark functionality
+        document.querySelectorAll('.bookmark-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const postId = this.dataset.postId;
+                fetch(`/blog/${postId}/bookmark/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.is_bookmarked) {
+                        // Remove the entire card when unbookmarking
+                        this.closest('.blog-card').remove();
+                    }
+                });
+            });
+        });
+
+        // Floating labels
+        document.querySelectorAll('.floating-label input, .floating-label textarea').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    input.parentElement.classList.remove('focused');
+                }
+            });
+            
+            // Check initial state
+            if (input.value) {
+                input.parentElement.classList.add('focused');
+            }
+        });
+    });
+</script>
+{% endblock %}

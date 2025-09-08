@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Edit{% else %}New{% endif %} Post - Writoria{% endblock %}
+
+{% block content %}
+<div class="form-container rounded-3xl shadow-2xl py-10 px-8">
+    <h1 class="text-3xl font-bold mb-6">{% if object %}Edit Post{% else %}Write New Post{% endif %}</h1>
+
+    <form method="post" enctype="multipart/form-data" class="blog-form" id="blog-form">
+        {% csrf_token %}
+        
+        <div class="content-section">
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <div class="field-errors">{{ form.title.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                    <div class="field-errors">{{ form.category.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.content.id_for_label }}" class="form-label">Content</label>
+                <div class="content-wrapper">
+                    <div id="editor-container" class="active">
+                        {{ form.content }}
+                    </div>
+                    <div id="preview-container" class="markdown-preview"></div>
+                </div>
+                {% if form.content.errors %}
+                    <div class="field-errors">{{ form.content.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="image-section">
+            <div class="form-group">
+                <label for="{{ form.image.id_for_label }}" class="form-label">Featured Image</label>
+                <div class="dropzone single-image-dropzone" id="featured-image-dropzone">
+                    <input type="file" name="image" id="{{ form.image.id_for_label }}" accept="image/*" class="hidden-input">
+                    <div class="upload-prompt">
+                        <i class="fas fa-cloud-upload-alt clickable"></i>
+                        <p class="clickable">🖼️ Drop your featured image here or click to upload</p>
+                    </div>
+                </div>
+                <div class="image-preview-container" id="featured-image-preview"></div>
+                {% if form.image.errors %}
+                    <div class="field-errors">{{ form.image.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Additional Images</label>
+                <div class="dropzone" id="image-dropzone">
+                    <input type="file" name="images" accept="image/*" multiple class="hidden-input">
+                    <div class="upload-prompt">
+                        <i class="fas fa-cloud-upload-alt clickable"></i>
+                        <p class="clickable">🖼️ Drop your images here or click to upload</p>
+                    </div>
+                </div>
+                <div class="image-preview-container" id="image-preview"></div>
+                {% if form.images.errors %}
+                    <div class="field-errors">{{ form.images.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.image_captions.id_for_label }}" class="form-label">Image Captions</label>
+                {{ form.image_captions }}
+                {% if form.image_captions.errors %}
+                    <div class="field-errors">{{ form.image_captions.errors }}</div>
+                {% endif %}
+                <p class="help-text">One caption per image, in order of upload</p>
+            </div>
+        </div>
+
+        <div class="form-actions gap-4 flex">
+            <button type="submit" class="btn btn-primary rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
+                <i class="fas fa-save"></i>
+                <span class="ml-2">{% if object %}Update{% else %}Publish{% endif %}</span>
+            </button>
+            <a href="{% url 'blog_list' %}" class="btn btn-secondary border border-gray-600 hover:bg-gray-700">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<div id="publish-loader" class="publish-loader hidden">
+    <div class="loader-content">
+        <div class="spinner"></div>
+        <p>Publishing your post...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prevent default drag and drop behavior
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlight(element) {
+        element.classList.add('drag-active');
+    }
+
+    function unhighlight(element) {
+        element.classList.remove('drag-active');
+    }
+
+    // Auto-expanding textarea
+    const textarea = document.querySelector('.rich-text-editor');
+    if (textarea) {
+        textarea.setAttribute('placeholder', 'Start writing your thoughts...');
+        
+        function autoResize() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        }
+        
+        textarea.addEventListener('input', autoResize);
+        textarea.addEventListener('focus', autoResize);
+        autoResize.call(textarea);
+    }
+
+    // Title placeholder
+    const titleInput = document.querySelector('input[name="title"]');
+    if (titleInput) {
+        titleInput.setAttribute('placeholder', 'Enter your blog title here...');
+    }
+
+    // Captions placeholder
+    const captionsTextarea = document.querySelector('textarea[name="image_captions"]');
+    if (captionsTextarea) {
+        captionsTextarea.setAttribute('placeholder', 'One caption per image...');
+    }
+
+    // Featured Image Upload
+    const featuredDropzone = document.getElementById('featured-image-dropzone');
+    const featuredImageInput = document.querySelector('input[name="image"]');
+    const featuredPreviewContainer = document.getElementById('featured-image-preview');
+
+    if (featuredDropzone && featuredImageInput) {
+        const clickableElements = featuredDropzone.querySelectorAll('.clickable');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            featuredDropzone.addEventListener(eventName, preventDefaults);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            featuredDropzone.addEventListener(eventName, () => highlight(featuredDropzone));
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            featuredDropzone.addEventListener(eventName, () => unhighlight(featuredDropzone));
+        });
+
+        featuredDropzone.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(files[0]);
+                featuredImageInput.files = dataTransfer.files;
+                showFeaturedImagePreview(files[0]);
+            }
+        });
+
+        clickableElements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                featuredImageInput.click();
+            });
+        });
+        
+        featuredImageInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                showFeaturedImagePreview(this.files[0]);
+            }
+        });
+
+        function showFeaturedImagePreview(file) {
+            featuredPreviewContainer.innerHTML = '';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.createElement('div');
+                preview.className = 'preview-item';
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Featured Image Preview">
+                    <span class="preview-label">Featured</span>
+                    <button type="button" class="remove-image" onclick="removeFeaturedImage(this)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                featuredPreviewContainer.appendChild(preview);
+            }
+            reader.readAsDataURL(file);
+        }
+
+        window.removeFeaturedImage = function(button) {
+            button.closest('.preview-item').remove();
+            featuredImageInput.value = '';
+        }
+    }
+
+    // Additional Images Upload
+    const dropzone = document.getElementById('image-dropzone');
+    const imageInput = document.querySelector('input[type="file"][multiple]');
+    const previewContainer = document.getElementById('image-preview');
+
+    if (dropzone && imageInput) {
+        const clickableElements = dropzone.querySelectorAll('.clickable');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => highlight(dropzone));
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => unhighlight(dropzone));
+        });
+
+        dropzone.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+
+        clickableElements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                imageInput.click();
+            });
+        });
+        
+        imageInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+            const existingFiles = Array.from(imageInput.files || []);
+            const allFiles = [...existingFiles, ...validFiles];
+            
+            previewContainer.innerHTML = '';
+            
+            allFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.createElement('div');
+                    preview.className = 'preview-item';
+                    preview.dataset.index = index;
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview ${index + 1}">
+                        <span class="preview-number">${index + 1}</span>
+                        <button type="button" class="remove-image" onclick="removeAdditionalImage(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    previewContainer.appendChild(preview);
+                    updateImageCaptions();
+                }
+                reader.readAsDataURL(file);
+            });
+
+            // Update the file input
+            const dataTransfer = new DataTransfer();
+            allFiles.forEach(file => dataTransfer.items.add(file));
+            imageInput.files = dataTransfer.files;
+        }
+
+        window.removeAdditionalImage = function(index) {
+            const files = Array.from(imageInput.files);
+            files.splice(index, 1);
+            
+            const dataTransfer = new DataTransfer();
+            files.forEach(file => dataTransfer.items.add(file));
+            imageInput.files = dataTransfer.files;
+            
+            // Re-render previews
+            previewContainer.innerHTML = '';
+            handleFiles(files);
+            updateImageCaptions();
+        }
+
+        function updateImageCaptions() {
+            const captionsArea = document.querySelector('textarea[name="image_captions"]');
+            if (captionsArea) {
+                const captions = captionsArea.value.split('\n');
+                while (captions.length > imageInput.files.length) {
+                    captions.pop();
+                }
+                while (captions.length < imageInput.files.length) {
+                    captions.push('');
+                }
+                captionsArea.value = captions.join('\n');
+            }
+        }
+    }
+
+    // Form submission handling
+    const form = document.getElementById('blog-form');
+    const loader = document.getElementById('publish-loader');
+
+    if (form && loader) {
+        form.addEventListener('submit', function(e) {
+            loader.classList.remove('hidden');
+        });
+    }
+});
+</script>
+{% endblock %}

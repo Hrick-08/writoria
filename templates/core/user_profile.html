@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile.user.username }}'s Profile - Writoria{% endblock %}
+
+{% block content %}
+<div class="profile-page animate-on-scroll">
+    <div class="profile-header">
+        <div class="avatar-wrapper">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="{{ profile.user.username }}" class="profile-avatar">
+            {% else %}
+                <div class="profile-avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            {% endif %}
+        </div>
+        <h1 class="profile-name text-3xl font-semibold mb-2">{{ profile.user.username }}</h1>
+        {% if profile.bio %}
+            <p class="bio text-sm text-gray-400">{{ profile.bio }}</p>
+        {% endif %}
+        {% if profile.website %}
+            <p class="website">
+                <a href="{{ profile.website }}" target="_blank" rel="noopener" class="website-link">
+                    <img src="https://www.google.com/s2/favicons?domain={{ profile.website }}" alt="Website icon" class="website-favicon">
+                    {{ profile.website }}
+                </a>
+            </p>
+        {% endif %}
+        
+        {% if request.user == profile.user %}
+            <div class="profile-actions">
+                <a href="{% url 'profile' %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+            </div>
+            <div class="profile-completion">
+                <div class="completion-bar">
+                    <div class="completion-progress" style="width: '{{ profile_completion|default:0 }}%';"></div>
+                </div>
+                <p class="completion-text">Profile {{ profile_completion }}% complete</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-section">
+            <h2>Posts by {{ profile.user.username }}</h2>
+            <div class="cards">
+                {% for post in posts %}
+                    <div class="card blog-card animate-on-scroll">
+                        <div class="card-header">
+                            {% if post.image %}
+                                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="card-image">
+                            {% endif %}
+                            <div class="card-badges">
+                                {% if user.is_authenticated %}
+                                    <button class="bookmark-btn" data-post-id="{{ post.id }}" title="Bookmark this post">
+                                        <i class="fas fa-bookmark"></i>
+                                    </button>
+                                {% endif %}
+                                <span class="category-badge" data-category="{{ post.category }}">{{ post.get_category_display|default:"Blog" }}</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3><a href="{% url 'blog_detail' post.slug %}">{{ post.title }}</a></h3>
+                            <p class="post-meta">
+                                <span class="date"><i class="fas fa-calendar"></i> {{ post.created_at|date:"M d, Y" }}</span>
+                                <span class="lives">
+                                    <i class="fas fa-heart"></i> {{ post.votes }}
+                                </span>
+                            </p>
+                            <p class="post-excerpt">{{ post.content|truncatewords:30 }}</p>
+                            <div class="post-actions">
+                                <div class="engagement-actions">
+                                    <span class="vote-btn heart">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="vote-count">{{ post.votes }}</span>
+                                    </span>
+                                    {% if user.is_authenticated %}
+                                        <button class="bookmark-btn {% if post in bookmarked_posts %}active{% endif %}" data-post-id="{{ post.id }}">
+                                            <span class="icon">{% if post in bookmarked_posts %}★{% else %}☆{% endif %}</span>
+                                            <span class="text">{% if post in bookmarked_posts %}Bookmarked{% else %}Bookmark{% endif %}</span>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✍️</div>
+                        <h3>No posts yet</h3>
+                        {% if request.user == profile.user %}
+                            <p>Start your writing journey!</p>
+                            <a href="{% url 'blog_create' %}" class="btn btn-primary">
+                                <i class="fas fa-pen"></i> Write your first post
+                            </a>
+                        {% else %}
+                            <p>{{ profile.user.username }} hasn't written any posts yet.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Profile completion calculation
+    function calculateProfileCompletion() {
+        const fields = ['avatar', 'bio', 'website'];
+        let completed = 0;
+        fields.forEach(field => {
+            if (document.querySelector(`.profile-${field}`)) {
+                completed++;
+            }
+        });
+        return Math.round((completed / fields.length) * 100);
+    }
+
+    // Bookmark functionality
+    document.querySelectorAll('.bookmark-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            fetch(`/blog/${postId}/bookmark/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.classList.toggle('active');
+                this.querySelector('i').classList.toggle('fas');
+                this.querySelector('i').classList.toggle('far');
+            });
+        });
+    });
+
+    // Heart animation
+    document.querySelectorAll('.lives').forEach(heart => {
+        heart.addEventListener('click', function() {
+            this.classList.add('animate-beat');
+            setTimeout(() => this.classList.remove('animate-beat'), 1000);
+        });
+    });
+
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Writoria - Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="welcome-text">
+            <span class="pre-title">Welcome to</span>
+            <h1>Writoria</h1>
+        </div>
+        <p class="hero-subtitle">Share your thoughts with the world</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'blog_create' %}" class="btn btn-primary cta-button">
+                <i class="fas fa-pen"></i>
+                Start Writing
+            </a>
+        {% else %}
+            <a href="{% url 'auth' %}" class="btn btn-primary cta-button">
+                <i class="fas fa-user"></i>
+                Join Writoria
+            </a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="features-section">
+    <h2 class="section-title animate-on-scroll">Why Choose Writoria?</h2>
+    <div class="features-grid">
+        <div class="feature-card animate-on-scroll" data-delay="0">
+            <div class="feature-icon pulse-on-hover">
+                <i class="fas fa-edit"></i>
+            </div>
+            <h3>Easy to Use</h3>
+            <p>Intuitive interface designed for writers to focus on content creation</p>
+        </div>
+
+        <div class="feature-card animate-on-scroll" data-delay="200">
+            <div class="feature-icon pulse-on-hover">
+                <i class="fas fa-globe"></i>
+            </div>
+            <h3>Global Reach</h3>
+            <p>Share your thoughts with readers from around the world</p>
+        </div>
+
+        <div class="feature-card animate-on-scroll" data-delay="400">
+            <div class="feature-icon pulse-on-hover">
+                <i class="fas fa-heart"></i>
+            </div>
+            <h3>Engage Readers</h3>
+            <p>Build a community around your content with comments and likes</p>
+        </div>
+
+        <div class="feature-card animate-on-scroll" data-delay="600">
+            <div class="feature-icon pulse-on-hover">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h3>AI-Powered Insights</h3>
+            <p>Get intelligent suggestions to improve your writing</p>
+        </div>
+    </div>
+</section>
+
+<section class="recent-posts">
+    <h2 class="section-title">Recent Posts</h2>
+    <div class="cards">
+        {% for post in posts %}
+            <div class="blog-card">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="{{ post.title }}" class="card-image">
+                {% endif %}
+                <div class="card-content">
+                    <h3><a href="{% url 'blog_detail' post.slug %}">{{ post.title }}</a></h3>
+                    <p class="post-meta">
+                        <a href="{% url 'user_profile' post.author.username %}" class="author-link">
+                            <i class="fas fa-user"></i> {{ post.author.username }}
+                        </a>
+                        <span class="lives">
+                            <i class="fas fa-heart"></i> {{ post.votes }}
+                        </span>
+                        <br>
+                        <span class="date"><i class="fas fa-calendar"></i> {{ post.created_at|date:"M d, Y" }}</span>
+                    </p>
+                    <p class="post-excerpt">{{ post.content|truncatewords:30 }}</p>
+                    <div class="post-actions">
+                        <a href="{% url 'blog_detail' post.slug %}" class="btn btn-primary">
+                            Read More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-feather-alt"></i>
+                <p>No posts yet. Be the first to write something!</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="testimonials-section">
+    <h2 class="section-title">What Our Users Say</h2>
+    <div class="testimonials-slider-container">
+        <button class="slider-arrow prev-arrow" aria-label="Previous testimonial">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="testimonials-slider">
+            <div class="testimonials-track">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="testimonial-header">
+                            <div class="testimonial-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="testimonial-author">
+                                <h4>Sarah Johnson</h4>
+                                <p>Fiction Writer</p>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Writoria has transformed how I share my stories. The intuitive interface and supportive community make writing a joy!"</p>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="testimonial-header">
+                            <div class="testimonial-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="testimonial-author">
+                                <h4>David Chen</h4>
+                                <p>Tech Blogger</p>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"The AI-powered insights have helped me improve my writing significantly. It's like having a writing coach available 24/7!"</p>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="testimonial-header">
+                            <div class="testimonial-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="testimonial-author">
+                                <h4>Maria Garcia</h4>
+                                <p>Travel Writer</p>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"I love how easy it is to connect with readers from around the world. The engagement features are fantastic!"</p>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="testimonial-header">
+                            <div class="testimonial-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="testimonial-author">
+                                <h4>James Wilson</h4>
+                                <p>Professional Writer</p>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"As a professional writer, I appreciate the clean interface and powerful features. Writoria has become my go-to platform."</p>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="testimonial-header">
+                            <div class="testimonial-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="testimonial-author">
+                                <h4>Emma Thompson</h4>
+                                <p>Poetry Enthusiast</p>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"The community here is incredibly supportive. I've grown so much as a writer thanks to the feedback and encouragement."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="slider-arrow next-arrow" aria-label="Next testimonial">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <div class="slider-dots"></div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+@import url('./core/base.css');
+@import url('./core/home.css');
+@import url('./core/auth.css');
+@import url('./core/blog.css');
+@import url('./core/profile.css');
+@import url('./core/about.css');
+@import url('./core/team.css');
+@import url('./chat/chat.css');
+@import url('./core/components.css');
+

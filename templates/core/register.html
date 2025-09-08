@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Writoria{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <h2>Create Account</h2>
+        
+        {% if messages %}
+        {% for message in messages %}
+        <div class="form-message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate class="auth-form">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="input-group">
+                {{ field }}
+                <i class="input-icon fas {% if field.name == 'username' %}fa-user{% elif field.name == 'email' %}fa-envelope{% elif field.name == 'password1' or field.name == 'password2' %}fa-lock{% endif %}"></i>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.name == 'password1' or field.name == 'password2' %}
+                <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                    <i class="fas fa-eye"></i>
+                </button>
+                {% endif %}
+                {% if field.help_text %}
+                <small class="help-text">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                {% for error in field.errors %}
+                <small class="error-text">{{ error }}</small>
+                {% endfor %}
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary w-full">Register</button>
+        </form>
+        
+        <div class="auth-links">
+            <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Any register-specific JS can go here
+});
+</script>
+{% endblock %}

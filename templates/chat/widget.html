@@ -1,0 +1,174 @@
+{% if user.is_authenticated %}
+{% load static %}
+
+<div class="chat-widget">
+    <div class="chat-icon" id="chatIcon">
+        <i class="fas fa-feather-alt"></i>
+    </div>
+    <div class="chat-popup" id="chatPopup">
+        <div class="chat-header">
+            <span>
+                <i class="fas fa-robot"></i>
+                Rick - Your Writing Assistant
+            </span>
+            <button class="chat-close" id="chatClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chat-messages-container" id="chatMessages">
+            <!-- Initial greeting message -->
+            <div class="message-wrapper">
+                <div class="bot-message welcome">
+                    <div class="bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        Hello {{ user.username }}! 👋 I'm Rick, your writing assistant powered by Llama. I can help you with writing and editing tips, blog post ideas, and platform usage questions. Feel free to ask me anything!
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form class="chat-input" id="chatForm" onsubmit="event.preventDefault(); sendMessage();">
+            {% csrf_token %}
+            <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off">
+            <button type="submit" id="sendButton">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatIcon = document.getElementById('chatIcon');
+    const chatPopup = document.getElementById('chatPopup');
+    const chatClose = document.getElementById('chatClose');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const sendButton = document.getElementById('sendButton');
+
+    // Toggle chat popup
+    chatIcon.addEventListener('click', () => {
+        chatPopup.classList.add('active');
+        chatIcon.classList.add('hidden');
+        messageInput.focus();
+    });
+
+    chatClose.addEventListener('click', () => {
+        chatPopup.classList.remove('active');
+        chatIcon.classList.remove('hidden');
+    });
+
+    window.sendMessage = function() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // Get CSRF token from the form
+        const csrfToken = chatForm.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Add user message
+        const userMessageHTML = `
+            <div class="message-wrapper">
+                <div class="user-message">
+                    <div class="message-content">${message}</div>
+                </div>
+            </div>
+        `;
+        chatMessages.insertAdjacentHTML('beforeend', userMessageHTML);
+
+        // Clear input and reset height
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Add typing indicator
+        const typingHTML = `
+            <div class="message-wrapper typing-wrapper">
+                <div class="bot-message typing">
+                    <div class="bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatMessages.insertAdjacentHTML('beforeend', typingHTML);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Send message to server
+        fetch('/chat/response/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: `message=${encodeURIComponent(message)}`
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(responseText => {
+            // Remove typing indicator
+            const typingIndicator = document.querySelector('.typing-wrapper');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+
+            // Add bot response
+            const botMessageHTML = `
+                <div class="message-wrapper">
+                    <div class="bot-message">
+                        <div class="bot-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            ${responseText}
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.insertAdjacentHTML('beforeend', botMessageHTML);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        })
+        .catch(error => {
+            // Remove typing indicator
+            const typingIndicator = document.querySelector('.typing-wrapper');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+
+            // Add error message
+            const errorMessageHTML = `
+                <div class="message-wrapper">
+                    <div class="bot-message error">
+                        <div class="bot-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            Sorry, I encountered an error. Please try again.
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.insertAdjacentHTML('beforeend', errorMessageHTML);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            console.error('Error:', error);
+        });
+    };
+
+    // Handle input resizing
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+});
+</script>
+{% endif %}

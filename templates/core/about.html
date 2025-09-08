@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - Writoria{% endblock %}
+
+{% block content %}
+<div class="about-page">
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>About Writoria</h1>
+            <p class="subtitle">Where words come alive and stories find their voice</p>
+        </div>
+    </section>
+
+    <section class="about-content">
+        <div class="mission-section">
+            <h2>Our Mission</h2>
+            <p>At Writoria, we believe that everyone has a story to tell. Our mission is to create a space where writers can freely express themselves, connect with readers, and grow their craft in a supportive community.</p>
+        </div>
+
+   
+        <div class="team-section">
+            <h2>Our Values</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="value-content">
+                        <h3>Innovation</h3>
+                        <p>Pushing boundaries and embracing new ideas to create the best writing platform.</p>
+                        <ul class="value-points">
+                            <li><i class="fas fa-check"></i> Creative Writing Tools</li>
+                            <li><i class="fas fa-check"></i> Modern Interface</li>
+                            <li><i class="fas fa-check"></i> Progressive Features</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="value-content">
+                        <h3>Community</h3>
+                        <p>Building a supportive environment where writers thrive together.</p>
+                        <ul class="value-points">
+                            <li><i class="fas fa-check"></i> Peer Support</li>
+                            <li><i class="fas fa-check"></i> Collaborative Growth</li>
+                            <li><i class="fas fa-check"></i> Diverse Perspectives</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="value-content">
+                        <h3>Excellence</h3>
+                        <p>Maintaining high standards while fostering inclusive growth.</p>
+                        <ul class="value-points">
+                            <li><i class="fas fa-check"></i> Quality Content</li>
+                            <li><i class="fas fa-check"></i> Professional Growth</li>
+                            <li><i class="fas fa-check"></i> Continuous Learning</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="join-section">
+            <h2>Join Our Community</h2>
+            <p>Ready to share your story with the world? Join Writoria today and become part of our growing community of writers and readers.</p>
+            {% if not user.is_authenticated %}
+                <a href="{% url 'auth' %}" class="btn btn-primary cta-button">
+                    <i class="fas fa-user-plus"></i>
+                    Join Writoria
+                </a>
+            {% else %}
+                <a href="{% url 'blog_create' %}" class="btn btn-primary cta-button">
+                    <i class="fas fa-pen"></i>
+                    Start Writing
+                </a>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

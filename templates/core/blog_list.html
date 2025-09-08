@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Writoria - Blog Posts{% endblock %}
+
+{% block content %}
+<section class="blog-list">
+    <h1>Blog Posts</h1>
+
+    <div class="blog-search-section">
+        <form method="get" class="search-form" id="blog-filter-form" style="width: 100%; display: flex; gap: 1rem;">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" name="search" placeholder="Search posts..." value="{{ search_query }}" class="search-input">
+            </div>
+            <div class="select-wrapper">
+                <select name="category" class="category-select" id="category-select">
+                    <option value="">All Categories</option>
+                    {% for code, name in categories %}
+                        <option value="{{ code }}" {% if selected_category == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+    
+    <div class="cards">
+        {% for post in posts %}
+            <div class="card blog-card">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="{{ post.title }}" class="card-image">
+                {% endif %}
+                <div class="card-content">
+                    <div class="card-header">
+                        <h2><a href="{% url 'blog_detail' post.slug %}">{{ post.title }}</a></h2>
+                        <span class="category-badge" data-category="{{ post.category }}">{{ post.get_category_display }}</span>
+                    </div>
+                    <p class="post-meta">
+                        <a href="{% url 'user_profile' post.author.username %}" class="author-link">
+                            <i class="fas fa-user"></i> {{ post.author.username }}
+                        </a>
+                        <span class="lives">
+                            <i class="fas fa-heart"></i> {{ post.votes }}
+                        </span>
+                        <br>
+                        <span class="date"><i class="fas fa-calendar"></i> {{ post.created_at|date:"M d, Y" }}</span>
+                    </p>
+                    <div class="post-excerpt">
+                        {{ post.content|safe|striptags|truncatechars:200 }}
+                    </div>
+                    <div class="post-actions">
+                        <a href="{% url 'blog_detail' post.slug %}" class="btn btn-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <p>{% if search_query %}No posts found matching your search{% else %}No posts available{% endif %}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="action-buttons">
+            <a href="{% url 'blog_create' %}" class="btn btn-primary create-post-btn">
+                <i class="fas fa-pen"></i> Write New Post
+            </a>
+        </div>
+    {% endif %}
+
+    {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn">&laquo; First</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn">Previous</a>
+            {% endif %}
+
+            <span class="current-page">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="btn">Last &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('category-select');
+    const searchForm = document.getElementById('blog-filter-form');
+
+    categorySelect.addEventListener('change', function() {
+        searchForm.submit();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Post - Writoria{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Delete Post</h1>
+    <div class="delete-confirmation">
+        <p>Are you sure you want to delete "{{ object.title }}"?</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">Delete</button>
+                <a href="{% url 'blog_detail' object.slug %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

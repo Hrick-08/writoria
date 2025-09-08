@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Writoria{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <h2>Login</h2>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="form-message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate class="auth-form">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="input-group{% if field.name == 'password' %} password-group{% endif %}">
+                {{ field }}
+                <i class="input-icon fas {% if field.name == 'username' %}fa-user{% elif field.name == 'password' %}fa-lock{% endif %}"></i>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.name == 'password' %}
+                <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                    <i class="fas fa-eye"></i>
+                </button>
+                {% endif %}
+                {% if field.help_text %}
+                <small class="help-text">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                {% for error in field.errors %}
+                <small class="error-text">{{ error }}</small>
+                {% endfor %}
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary w-full">Login</button>
+        </form>
+
+        <div class="auth-links">
+            <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

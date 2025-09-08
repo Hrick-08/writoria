@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Our Team - Writoria{% endblock %}
+
+{% block content %}
+<div class="team-page">
+    <section class="team-hero">
+        <div class="hero-content">
+            <h1>Meet Our Team</h1>
+            <p class="subtitle">The creative minds behind Writoria</p>
+        </div>
+    </section>
+
+    <section class="team-grid">
+        <div class="team-member">
+            <div class="member-image">
+                {% if divyam_image %}
+                    <img src="{% static divyam_image %}" alt="Divyam" class="member-photo">
+                {% else %}
+                    <div class="image-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="member-info">
+                <h2>Divyam</h2>
+                <p class="role">Lead Developer</p>
+                <p class="bio">Leading the technical vision and architecture of Writoria.</p>
+                <div class="social-links">
+                    <a href="https://github.com/voltrox007" target="_blank"><i class="fab fa-github"></i></a>
+                    <a href="https://www.linkedin.com/in/divyam-aeron-a3753630b/" target="_blank"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-member">
+            <div class="member-image">
+                {% if abhinav_image %}
+                    <img src="{% static abhinav_image %}" alt="Abhinav" class="member-photo">
+                {% else %}
+                    <div class="image-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="member-info">
+                <h2>Abhinav</h2>
+                <p class="role">Full Stack Developer</p>
+                <p class="bio">Expert in both frontend and backend development.</p>
+                <div class="social-links">
+                    <a href="https://github.com/Abh1nav7" target="_blank"><i class="fab fa-github"></i></a>
+                    <a href="https://www.linkedin.com/in/abhinav-dadwal-3b280a324/" target="_blank"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-member">
+            <div class="member-image">
+                {% if hrick_image %}
+                    <img src="{% static hrick_image %}" alt="Hrick" class="member-photo">
+                {% else %}
+                    <div class="image-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="member-info">
+                <h2>Hrick</h2>
+                <p class="role">Full Stack Developer</p>
+                <p class="bio">Expert in both frontend and backend development.</p>
+                <div class="social-links">
+                    <a href="https://github.com/Hrick-08" target="_blank"><i class="fab fa-github"></i></a>
+                    <a href="https://www.linkedin.com/in/hritabrata-das-913460326/" target="_blank"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-member">
+            <div class="member-image">
+                {% if harsh_image %}
+                    <img src="{% static harsh_image %}" alt="Harsh" class="member-photo">
+                {% else %}
+                    <div class="image-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="member-info">
+                <h2>Harsh</h2>
+                <p class="role">UI/UX Designer</p>
+                <p class="bio">Creating beautiful and intuitive user interfaces.</p>
+                <div class="social-links">
+                    <a href="https://github.com/HarshKumar510" target="_blank"><i class="fab fa-github"></i></a>
+                    <a href="https://www.linkedin.com/in/harsh-kumar-552368324/" target="_blank"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

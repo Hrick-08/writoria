@@ -1,0 +1,474 @@
+/* Authentication Pages */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--bg-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 450px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06),
+        inset 0 2px 4px rgba(255, 255, 255, 0.05);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.auth-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transition: 0.5s;
+    z-index: -1;
+}
+
+.auth-box:hover::before {
+    left: 100%;
+}
+
+/* Auth Tabs */
+.auth-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.auth-tab-btn {
+    flex: 1;
+    padding: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.auth-tab-btn i {
+    margin-right: 0.5rem;
+}
+
+.auth-tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.auth-tab-btn:hover {
+    opacity: 0.9;
+}
+
+.auth-tab-btn.active {
+    opacity: 1;
+    color: var(--accent-color);
+}
+
+.auth-tab-btn.active::after {
+    transform: scaleX(1);
+}
+
+/* Auth Forms */
+.auth-forms {
+    position: relative;
+    min-height: 300px;
+}
+
+.auth-tab-content {
+    display: none;
+    animation: fadeSlideUp 0.4s ease-out;
+}
+
+.auth-tab-content.active {
+    display: block;
+}
+
+.auth-form {
+    max-width: 400px;
+    margin: 2rem auto;
+    width: 100%;
+    text-align: left;
+}
+
+.auth-form .input-group {
+    position: relative;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.auth-form .input-group.password-group {
+    display: flex;
+    align-items: center;
+}
+
+.auth-form .input-group input,
+.auth-form .input-group select {
+    width: 100%;
+    padding: 1rem 3rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.auth-form .input-group input::placeholder {
+    color: #666;
+    opacity: 0.8;
+}
+
+.auth-form .input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.auth-form .input-group input:focus,
+.auth-form .input-group select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 
+        0 10px 25px -5px rgba(99, 102, 241, 0.1),
+        0 5px 10px -5px rgba(99, 102, 241, 0.04);
+    transform: translateY(-2px);
+    background: rgba(99, 102, 241, 0.02);
+}
+
+.auth-form .input-group input:focus + .input-icon {
+    color: var(--accent-color);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.auth-form .input-group label {
+    position: absolute;
+    left: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.auth-form .input-group input:focus ~ label,
+.auth-form .input-group input:not(:placeholder-shown) ~ label {
+    top: -0.5rem;
+    left: 1rem;
+    transform: translateY(-50%) scale(0.85);
+    background: var(--bg-color);
+    padding: 0 0.5rem;
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.auth-form .input-group select:hover,
+.auth-form .input-group input:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.auth-form .input-group select option {
+    padding: 1rem;
+    color: #333;
+    background: var(--bg-color);
+}
+
+.auth-form .input-group select:required:invalid {
+    color: #666;
+}
+
+.auth-form .input-group select option[value=""][disabled] {
+    display: none;
+}
+
+/* Add a custom dropdown arrow */
+.auth-form .input-group.select-group {
+    position: relative;
+}
+
+.auth-form .input-group.select-group::after {
+    content: '\f107';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.auth-form .input-group.select-group:focus-within::after {
+    color: var(--accent-color);
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.auth-form .input-group.select-group select {
+    width: 100%;
+    padding: 1rem 3rem;
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    color: #333;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.auth-form .input-group.select-group select:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.auth-form .input-group.select-group select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.auth-form .input-group.select-group select option {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    background: var(--bg-color);
+    color: #333;
+}
+
+.auth-form .input-group.select-group select option:first-child {
+    color: #666;
+    font-style: italic;
+}
+
+.auth-form button[type="submit"] {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    margin: 1.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth-form button[type="submit"]:hover {
+    background: linear-gradient(135deg, var(--gradient-end), var(--gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+}
+
+.auth-form button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+/* Form Messages */
+.form-message {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    font-weight: 500;
+}
+
+.form-message.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    font-weight: 500;
+}
+
+/* Password Toggle Button */
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.password-toggle:hover {
+    color: var(--accent-color);
+}
+
+.password-toggle i {
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+/* Adjust input padding for password fields to accommodate the toggle button */
+.auth-form .input-group input[type="password"] {
+    padding-right: 3rem !important;
+}
+
+/* Ensure the toggle button is always clickable */
+.auth-form .input-group .password-toggle {
+    position: absolute;
+    right: 1rem;
+}
+
+/* Form Links */
+.auth-links {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.auth-links a {
+    color: #4f46e5;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.auth-links a:hover {
+    color: #6366f1;
+    text-decoration: underline;
+    opacity: 0.9;
+}
+
+/* Form Validation */
+.error-text {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.help-text {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+/* Animations */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .auth-box {
+        padding: 2rem;
+    }
+
+    .auth-box h2 {
+        font-size: 1.75rem;
+    }
+    
+    .auth-tabs {
+        flex-direction: column;
+    }
+    
+    .auth-tab-btn {
+        width: 100%;
+    }
+}
+
+.auth-title {
+    font-size: 2rem;
+    color: #2d3748;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.error-messages {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+.error-text {
+    color: #dc2626;
+    font-size: 0.875rem;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.error-text:last-child {
+    margin-bottom: 0;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+.input-group input {
+    text-align: left;
+}
